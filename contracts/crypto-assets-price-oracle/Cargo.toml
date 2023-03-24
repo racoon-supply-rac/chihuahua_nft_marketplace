@@ -1,0 +1,29 @@
+[package]
+name          = "crypto-assets-price-oracle"
+description   = "crypto-assets-price-oracle"
+version       = { workspace = true }
+authors       = { workspace = true }
+edition       = { workspace = true }
+homepage      = { workspace = true }
+rust-version  = { workspace = true }
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[features]
+backtraces = ["cosmwasm-std/backtraces"]
+library = []
+
+[dependencies]
+cw-storage-plus    = { workspace = true }
+cosmwasm-schema    = { workspace = true }
+cosmwasm-std       = { workspace = true }
+cw2                = { workspace = true }
+serde              = { workspace = true }
+price-oracle-utils = { workspace = true }
+general-utils      = { workspace = true }
+
+[dev-dependencies]
+prost = "0.10"
+cw-multi-test   = "0.13.0"
+anyhow = { version = "1.0.51"}

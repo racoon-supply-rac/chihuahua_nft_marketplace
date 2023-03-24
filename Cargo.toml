@@ -1,0 +1,32 @@
+[workspace]
+members = ["contracts/*", "packages/*"]
+
+[workspace.package]
+version       = "0.0.1"
+authors       = ["Racoon Supply <racoon.supply.nft@gmail.com>"]
+edition       = "2021"
+homepage      = "https://racoon.supply"
+rust-version  = "1.64.0"
+license       = "MIT"
+
+[workspace.dependencies]
+cosmwasm-schema            = "1.2.1"
+cosmwasm-std               = "1.2.1"
+cw2                        = "0.16.0"
+cw20                       = "0.16.0"
+cw20-base                  = "0.16.0"
+cw721                      = "0.16.0"
+cw721-base                 = "0.16.0"
+cw-storage-plus            = "0.16.0"
+thiserror                  = "1.0.31"
+cw-utils                   = "0.16.0"
+serde                      = { version = "1.0.140", default-features = false, features = ["derive"] }
+chihuahua-nft-marketplace  = { version = "0.0.1", path = "./contracts/chihuahua-nft-marketplace" }
+crypto-assets-price-oracle = { version = "0.0.1", path = "./contracts/crypto-assets-price-oracle" }
+nft-marketplace-utils      = { version = "0.0.1", path = "./packages/nft-marketplace-utils" }
+price-oracle-utils         = { version = "0.0.1", path = "./packages/price-oracle-utils" }
+general-utils              = { version = "0.0.1", path = "./packages/general-utils" }
+
+[workspace.dev-dependencies]
+cw-multi-test   = "0.16.2"
+anyhow = { version = "1.0.51"}

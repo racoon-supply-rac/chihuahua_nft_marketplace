@@ -1,0 +1,15 @@
+[package]
+name          = "general-utils"
+description   = "Structs and Utility functions"
+version       = { workspace = true }
+authors       = { workspace = true }
+edition       = { workspace = true }
+homepage      = { workspace = true }
+rust-version  = { workspace = true }
+
+[dependencies]
+thiserror           = { workspace = true }
+cosmwasm-schema     = { workspace = true }
+cosmwasm-std        = { workspace = true }
+cw-storage-plus     = { workspace = true }
+serde               = { workspace = true }

@@ -1,0 +1,19 @@
+[package]
+name          = "nft-marketplace-utils"
+description   = "Structs and utility functions used for the Chihuahua NFT Marketplace"
+version       = { workspace = true }
+authors       = { workspace = true }
+edition       = { workspace = true }
+homepage      = { workspace = true }
+rust-version  = { workspace = true }
+
+[dependencies]
+cosmwasm-schema  = { workspace = true }
+cosmwasm-std     = { workspace = true }
+cw2              = { workspace = true }
+cw20             = { workspace = true }
+cw721-base       = { workspace = true }
+cw721            = { workspace = true }
+cw-storage-plus  = { workspace = true }
+thiserror        = { workspace = true }
+general-utils    = { workspace = true }

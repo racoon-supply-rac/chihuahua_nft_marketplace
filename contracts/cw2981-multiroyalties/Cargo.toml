@@ -1,0 +1,27 @@
+[package]
+name          = "cw2981-multiroyalties"
+description   = "Basic implementation of royalties for cw721 NFTs with token level royalties"
+authors       = ["Alex Lynham <alex@lynh.am>", "Racoon Supply"]
+version       = { workspace = true }
+edition       = { workspace = true }
+homepage      = { workspace = true }
+rust-version  = { workspace = true }
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[features]
+backtraces = ["cosmwasm-std/backtraces"]
+library = []
+
+[dependencies]
+cosmwasm-schema = { workspace = true }
+cosmwasm-std    = { workspace = true }
+cw2             = { workspace = true }
+cw721           = { workspace = true }
+cw721-base      = { workspace = true, features = ["library"] }
+serde           = { workspace = true }
+
+[dev-dependencies]
+cw-multi-test   = "0.13.0"
+anyhow = { version = "1.0.51"}

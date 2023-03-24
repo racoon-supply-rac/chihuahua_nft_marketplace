@@ -1,0 +1,15 @@
+[package]
+name          = "price-oracle-utils"
+description   = "Structs and utility functions used within the Crypto Assets Price Oracle"
+version       = { workspace = true }
+authors       = { workspace = true }
+edition       = { workspace = true }
+homepage      = { workspace = true }
+rust-version  = { workspace = true }
+
+[dependencies]
+cosmwasm-schema = { workspace = true }
+cosmwasm-std    = { workspace = true }
+cw2             = { workspace = true }
+thiserror       = { workspace = true }
+general-utils   = { workspace = true }
