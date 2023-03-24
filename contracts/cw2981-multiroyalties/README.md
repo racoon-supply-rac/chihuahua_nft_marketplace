@@ -1,3 +1,5 @@
+**Note**: This contract has been taken from [this repo](https://github.com/CosmWasm/cw-nfts/tree/main/contracts/cw2981-royalties) and the royalty field of the NFT has been changed to a vector of royalties. The rest is the same.
+
 # CW-2981 Token-level Royalties
 
 An example of porting EIP-2981 to implement multi-royalties at a token mint level.
