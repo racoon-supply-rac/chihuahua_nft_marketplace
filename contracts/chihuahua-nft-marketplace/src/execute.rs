@@ -329,9 +329,22 @@ pub fn execute_update_nft_sale(
     );
     let mut nft_for_sale_info = nfts_for_sale().load(deps.storage, collection_token_id_unique.clone())?;
 
-    // Validation: Sender == Seller
-    nft_for_sale_info = nft_for_sale_info.validate_sender_is_seller(
-        &info.sender.to_string(), &env.contract.address.to_string())?;
+    // Validation: Sender == Owner
+    // Validate: Sender is the owner
+    let owner_response = Cw721Contract::<Empty, Empty>(
+        deps.api.addr_validate(&sale_info.nft_collection_address.clone())?,
+        PhantomData,
+        PhantomData)
+        .owner_of(
+            &deps.querier,
+            sale_info.token_id.clone().to_string(),
+            false
+        )?;
+    nft_for_sale_info = nft_for_sale_info.validate_sender_is_token_owner(
+        &info.sender.to_string(),
+        &env.contract.address.to_string(),
+        &owner_response.owner.to_string()
+    )?;
 
     // Updating a sale = Cancelling + Adding a new sale with waived fees
     let cancel_sale_msg = ExecuteMsg::wasm_execute_message_cancel_sale(
@@ -381,12 +394,25 @@ pub fn execute_cancel_nft_sale(
         return Err(ContractError::NftMarketplace(AdditionalInfoNeedsToBeFilled {}));
     }
 
-    // Validate: Only sender == seller can cancel
+    // Validate: Only the NFT owner can cancel a sale (or the contract for an offer change)
+    // Validate: Sender is the owner
+    let owner_response = Cw721Contract::<Empty, Empty>(
+        deps.api.addr_validate(&nft_collection_address)?,
+        PhantomData,
+        PhantomData)
+        .owner_of(
+            &deps.querier,
+            token_id.clone().to_string(),
+            false
+        )?;
     let collection_token_id_unique = define_unique_collection_nft_id(&nft_collection_address, &token_id);
 
     let mut nft_for_sale_info = nfts_for_sale().load(deps.storage, collection_token_id_unique.clone())?;
-    nft_for_sale_info = nft_for_sale_info.validate_sender_is_seller(
-        &info.sender.to_string(), &env.contract.address.to_string())?;
+    nft_for_sale_info = nft_for_sale_info.validate_sender_is_token_owner(
+        &info.sender.to_string(),
+        &env.contract.address.to_string(),
+        &owner_response.owner.to_string()
+    )?;
 
     // Validate: Need to revoke an approval before cancelling a Sale (otherwise a Transfer auto-cancels)
     if !additional_info.is_some() {

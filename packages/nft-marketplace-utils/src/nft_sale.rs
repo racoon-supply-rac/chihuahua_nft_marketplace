@@ -7,7 +7,7 @@ use crate::config::Config;
 use general_utils::denominations::Denomination;
 use general_utils::error::ContractError;
 use general_utils::error::GenericError::InvalidFundsReceived;
-use general_utils::error::NftMarketplaceError::{CantCancelASaleYouDontOwn, InvalidBuyerInformation, InvalidDenomOrValueReceivedForListingFee, InvalidExpirationTimeForTheSale, InvalidPriceForTheSale, InvalidSellerInformation, YouDontOwnThisTokenID};
+use general_utils::error::NftMarketplaceError::{InvalidBuyerInformation, InvalidDenomOrValueReceivedForListingFee, InvalidExpirationTimeForTheSale, InvalidPriceForTheSale, InvalidSellerInformation, YouDontOwnThisTokenID};
 use crate::inputs::Buyer;
 use crate::nft_collection::{NftCollectionAddress, TokenId};
 
@@ -111,11 +111,16 @@ impl NftSale {
         return sale_value * marketplace_fees_pct;
     }
 
-    pub fn validate_sender_is_seller(self, sender_address: &str, contract_addr: &str) -> Result<Self, ContractError> {
-        if self.seller == sender_address || sender_address == contract_addr {
+    pub fn validate_sender_is_token_owner(
+        self,
+        sender_address: &str,
+        contract_addr: &str,
+        token_owner: &str
+    ) -> Result<Self, ContractError> {
+        if sender_address == contract_addr || token_owner == sender_address {
             return Ok(self)
         } else {
-            Err(ContractError::NftMarketplace(CantCancelASaleYouDontOwn {}))
+            Err(ContractError::NftMarketplace(YouDontOwnThisTokenID {}))
         }
     }
 }

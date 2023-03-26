@@ -1030,7 +1030,7 @@ mod tests {
         );
         assert_eq!(
             execute_output.unwrap_err().source().unwrap().to_string(),
-            "CantCancelASaleYouDontOwn".to_string()
+            "YouDontOwnThisTokenID".to_string()
         );
 
         // Try to cancel a sale that is not listed
@@ -1121,7 +1121,7 @@ mod tests {
         );
         assert_eq!(
             execute_output.unwrap_err().source().unwrap().to_string(),
-            "CantCancelASaleYouDontOwn".to_string()
+            "YouDontOwnThisTokenID".to_string()
         );
 
         // Update a sale: Wrong seller update
