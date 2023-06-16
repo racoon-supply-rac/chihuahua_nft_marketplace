@@ -1,6 +1,6 @@
 # Chihuahua NFT Marketplace contract - Beta Version
 This repo contains all the necessary to deploy the Chihuahua NFT Marketplace Beta Version on a CosmWasm enabled blockchain.
-The code has not been audited and currently contains 100% of the codebase (but not entirely optimized).
+The code has not been audited and currently contains 98% of the codebase (but not entirely optimized).
 
 The final version of the code will be published at the end of the project.
 
