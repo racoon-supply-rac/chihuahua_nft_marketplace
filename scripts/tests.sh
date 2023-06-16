@@ -1,1 +1,1 @@
-cargo test --lib marketplace::tests; cargo test --lib oracle::tests; cargo test --lib open_edition_minter::tests;
+cargo test --lib marketplace::tests; cargo test --lib oracle::tests; cargo test --lib open_edition_minter::tests; cargo tarpaulin

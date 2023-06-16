@@ -12,7 +12,6 @@ to make the NFT marketplace.
 
 ## Tests
 To launch all the tests, just use: `bash scripts/tests.sh`.
-And `cargo tarpaulin`
 
 ## Linting
 `bash scripts/lint.sh`
