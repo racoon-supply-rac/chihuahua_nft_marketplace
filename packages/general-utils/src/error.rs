@@ -2,29 +2,86 @@ use cosmwasm_std::StdError;
 use thiserror::Error;
 
 #[derive(Debug, Error, PartialEq)]
-pub enum RandomMinterError {
-    #[error("PreloadNumberIsInvalid")]
-    PreloadNumberIsInvalid {},
-    #[error("InvalidRoyalty")]
-    InvalidRoyalty {},
-    #[error("PreloadIsCompleteOrMintingStarted")]
-    PreloadIsCompleteOrMintingStarted {},
-    #[error("YouSentTooManyNftsToPreload")]
-    YouSentTooManyNftsToPreload {},
-    #[error("CannotMintYet")]
-    CannotMintYet {},
-    #[error("YouCantMintThisAmountOfNfts")]
-    YouCantMintThisAmountOfNfts {},
-    #[error("ErrorPreloadingTheSameTokenTwice")]
-    ErrorPreloadingTheSameTokenTwice {},
-    #[error("MaxMintPerWalletReached")]
-    MaxMintPerWalletReached {},
-    #[error("ExceedingMaxMintPerTxn")]
-    ExceedingMaxMintPerTxn {},
+pub enum GenericError {
+    #[error("DivisionError")]
+    DivisionError {},
+    #[error("MultiplicationError")]
+    MultiplicationError {},
+    #[error("ErrorWhileInstantiatingCw2981")]
+    ErrorWhileInstantiatingCw2981 {},
+    #[error("InvalidReplyID")]
+    InvalidReplyID {},
+    #[error("NotImplementedYet")]
+    NotImplementedYet {},
+    #[error("Unauthorized")]
+    Unauthorized {},
+    #[error("InvalidExecuteMessage")]
+    InvalidExecuteMessage {},
+    #[error("ContractDisabled")]
+    ContractDisabled {},
+    #[error("InvalidDenominationReceived")]
+    InvalidDenominationReceived {},
+    #[error("InvalidCw20MessageReceived")]
+    InvalidCw20MessageReceived {},
+    #[error("InvalidFundsReceived")]
+    InvalidFundsReceived {},
+    #[error("Addr ({address}) and block ({block})")]
+    PendingError { address: String, block: String },
+}
+
+#[derive(Debug, Error, PartialEq)]
+pub enum PriceOracleError {
+    #[error("SomeDenomsAreMissingInYourUpdate")]
+    SomeDenomsAreMissingInYourUpdate {},
+    #[error("InvalidTimeForPriceReceived")]
+    InvalidTimeForPrice {},
+}
+
+#[derive(Debug, Error, PartialEq)]
+pub enum GameError {
+    #[error("GameNotEnabled")]
+    GameNotEnabled {},
+    #[error("BetAmountNotWithinTheAcceptedRange")]
+    BetAmountNotWithinTheAcceptedRange {},
+    #[error("LiquidityIsTooLowForThisDenom")]
+    LiquidityIsTooLowForThisDenom {},
+    #[error("InvalidBetConfiguration")]
+    InvalidBetConfiguration {},
+    #[error("InvalidBetInput")]
+    InvalidBetInput {},
+    #[error("LPNotFound")]
+    LPNotFound {},
+    #[error("GameNotAvailableYet")]
+    GameNotAvailableYet {},
+    #[error("MaxUsdcPotentialExceeded")]
+    MaxUsdcPotentialExceeded {},
+    #[error("JobAlreadyExists")]
+    JobAlreadyExists {},
+    #[error("UnexpectedError")]
+    UnexpectedError {},
+}
+
+#[derive(Debug, Error, PartialEq)]
+pub enum SchedulerError {
+    #[error("NoJobs")]
+    NoJobs {},
+}
+
+
+#[derive(Debug, Error, PartialEq)]
+pub enum NftCollectionError {
+    #[error("NoNftsMintedForThisContract")]
+    NoNftsMintedForThisContract {},
 }
 
 #[derive(Debug, Error, PartialEq)]
 pub enum NftMarketplaceError {
+    #[error("InvalidNftCollection")]
+    InvalidNftCollection {},
+    #[error("InvalidInput")]
+    InvalidInput {},
+    #[error("InvalidRoyalty")]
+    InvalidRoyalty {},
     #[error("InvalidAmountReceivedForLevelUp")]
     InvalidAmountReceivedForLevelUp {},
     #[error("AlreadyLevel3")]
@@ -57,8 +114,22 @@ pub enum NftMarketplaceError {
     RevokeYourApprovalBeforeCancellingSale {},
     #[error("YourProfileAlreadyExists")]
     YourProfileAlreadyExists {},
+    #[error("InvalidNftShowcaseReceived")]
+    InvalidNftShowcaseReceived {},
+    #[error("InvalidUsername")]
+    InvalidUsername {},
+    #[error("ThisUsernameIsAlreadyTaken")]
+    ThisUsernameIsAlreadyTaken {},
+    #[error("ReceiverDoesNotExist")]
+    ReceiverDoesNotExist {},
     #[error("ThisProfileDoesNotExist")]
     ThisProfileDoesNotExist {},
+    #[error("MessageRecipientDoesNotExist")]
+    MessageRecipientDoesNotExist {},
+    #[error("InvalidMessage")]
+    InvalidMessage {},
+    #[error("UsernameUnexpectedError")]
+    UsernameUnexpectedError {},
     #[error("InvalidSenderOrYouCantChangeProfileAddress")]
     InvalidSenderOrYouCantChangeProfileAddress {},
     #[error("This Sale Does Not Exist")]
@@ -101,48 +172,20 @@ pub enum NftMarketplaceError {
     BuyAndSellCannotBeNoneTogether {},
     #[error("BuyAndSellCannotBeFilledTogether")]
     BuyAndSellCannotBeFilledTogether {},
-
-
 }
 
-#[derive(Debug, Error, PartialEq)]
-pub enum GenericError {
-    #[error("DivisionError")]
-    DivisionError {},
-    #[error("MultiplicationError")]
-    MultiplicationError {},
-    #[error("ErrorWhileInstantiatingCw2981")]
-    ErrorWhileInstantiatingCw2981 {},
-    #[error("InvalidReplyID")]
-    InvalidReplyID {},
-    #[error("NotImplementedYet")]
-    NotImplementedYet {},
-    #[error("Unauthorized")]
-    Unauthorized {},
-    #[error("InvalidExecuteMessage")]
-    InvalidExecuteMessage {},
-    #[error("ContractDisabled")]
-    ContractDisabled {},
-    #[error("InvalidDenominationReceived")]
-    InvalidDenominationReceived {},
-    #[error("InvalidCw20MessageReceived")]
-    InvalidCw20MessageReceived {},
-    #[error("InvalidFundsReceived")]
-    InvalidFundsReceived {},
-}
+
 
 #[derive(Debug, Error, PartialEq)]
-pub enum PriceOracleError {
-    #[error("SomeDenomsAreMissingInYourUpdate")]
-    SomeDenomsAreMissingInYourUpdate {},
-    #[error("InvalidTimeForPriceReceived")]
-    InvalidTimeForPrice {}
-}
-
-#[derive(Debug, Error, PartialEq)]
-pub enum NftCollectionError {
-    #[error("NoNftsMintedForThisContract")]
-    NoNftsMintedForThisContract {},
+pub enum ReserveError {
+    #[error("InvalidInitMsg")]
+    InvalidInitMsg {},
+    #[error("ReserveIsTooLow")]
+    ReserveIsTooLow {},
+    #[error("Addr ({address}) and block ({block})")]
+    ReserveTooLowPBVAL { address: String, block: String },
+    #[error("Addr ({address}) and block ({block})")]
+    ReserveTooLowD { address: String, block: String },
 }
 
 #[derive(Debug, Error, PartialEq)]
@@ -152,11 +195,15 @@ pub enum ContractError {
     #[error("{0}")]
     Generic(GenericError),
     #[error("{0}")]
-    NftMarketplace(NftMarketplaceError),
-    #[error("{0}")]
-    NftCollection(NftCollectionError),
-    #[error("{0}")]
     PriceOracle(PriceOracleError),
     #[error("{0}")]
-    RandomMinterError(RandomMinterError),
+    GameError(GameError),
+    #[error("{0}")]
+    ReserveError(ReserveError),
+    #[error("{0}")]
+    SchedulerError(SchedulerError),
+    #[error("{0}")]
+    NftMarketplaceError(NftMarketplaceError),
+    #[error("{0}")]
+    NftCollectionError(NftCollectionError),
 }

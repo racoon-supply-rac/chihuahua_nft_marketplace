@@ -1,15 +1,32 @@
 use std::fmt;
+
 use cosmwasm_schema::cw_serde;
-use cosmwasm_std::{Uint128, Decimal, Api};
+use cosmwasm_std::{ensure, Api, Decimal, Uint128};
+
 use general_utils::error::ContractError;
-use general_utils::error::NftMarketplaceError::{AlreadyLevel3, InvalidAmountReceivedForLevelUp, InvalidLevelUp, InvalidRewards, NeedToFillAllThePerks};
+use general_utils::error::NftMarketplaceError::{
+    AlreadyLevel3, InvalidAmountReceivedForLevelUp, InvalidLevelUp, InvalidRewards,
+    NeedToFillAllThePerks,
+};
 
 #[cw_serde]
 pub struct RewardSystem {
     pub reward_token_address: String,
     pub reward_token_per_1usdc_volume: Uint128,
     pub total_reward_tokens_distributed: Uint128,
-    pub vip_perks: Vec<VipPerk>
+    pub vip_perks: Vec<VipPerk>,
+}
+
+impl Default for RewardSystem {
+    fn default() -> Self {
+        // initialize with default values
+        RewardSystem {
+            reward_token_address: "".to_string(),
+            reward_token_per_1usdc_volume: Default::default(),
+            total_reward_tokens_distributed: Default::default(),
+            vip_perks: vec![],
+        }
+    }
 }
 
 impl RewardSystem {
@@ -18,34 +35,47 @@ impl RewardSystem {
         reward_token_address: String,
         reward_token_per_1usdc_volume: Uint128,
         total_reward_tokens_distributed: Uint128,
-        vip_perks: Vec<VipPerk>
+        vip_perks: Vec<VipPerk>,
     ) -> Result<Self, ContractError> {
-        if reward_token_per_1usdc_volume < Uint128::new(1u128) {
-            return Err(ContractError::NftMarketplace(InvalidRewards {}))
-        }
-        if total_reward_tokens_distributed != Uint128::zero() {
-            return Err(ContractError::NftMarketplace(InvalidRewards {}))
-        }
+        ensure!(
+            reward_token_per_1usdc_volume >= Uint128::new(1u128),
+            ContractError::NftMarketplaceError(InvalidRewards {})
+        );
+
+        ensure!(
+            total_reward_tokens_distributed.is_zero(),
+            ContractError::NftMarketplaceError(InvalidRewards {})
+        );
+
         let mut seen = [false; 3];
         for perk in &vip_perks {
             match perk.vip_level {
-                VipLevel::Level0 => {},
+                VipLevel::Level0 => {}
                 VipLevel::Level1 => seen[0] = true,
                 VipLevel::Level2 => seen[1] = true,
                 VipLevel::Level3 => seen[2] = true,
             }
         }
-        if !(seen.iter().all(|&p| p)) {
-            return Err(ContractError::NftMarketplace(NeedToFillAllThePerks {}))
-        }
-        Ok(
-            RewardSystem {
-                reward_token_address: api.addr_validate(&reward_token_address)?.to_string(),
-                reward_token_per_1usdc_volume,
-                total_reward_tokens_distributed,
-                vip_perks,
-            }
-        )
+        ensure!(
+            seen.iter().all(|&p| p),
+            ContractError::NftMarketplaceError(NeedToFillAllThePerks {})
+        );
+
+        ensure!(
+            !vip_perks.iter().any(|perk| {
+                perk.marketplace_fees_discount < Decimal::percent(1u64)
+                    || perk.marketplace_fees_discount > Decimal::percent(50u64)
+            }),
+            ContractError::NftMarketplaceError(InvalidRewards {})
+        );
+
+        let reward_token_address = api.addr_validate(&reward_token_address)?.to_string();
+        Ok(RewardSystem {
+            reward_token_address,
+            reward_token_per_1usdc_volume,
+            total_reward_tokens_distributed,
+            vip_perks,
+        })
     }
 }
 
@@ -76,14 +106,16 @@ impl VipLevel {
     ) -> Result<bool, ContractError> {
         let next_level = current_level.clone().next_level();
         if current_level == next_level {
-            return Err(ContractError::NftMarketplace(AlreadyLevel3 {}));
+            return Err(ContractError::NftMarketplaceError(AlreadyLevel3 {}));
         }
         let next_perk = vip_perks
             .iter()
             .find(|perk| perk.vip_level == next_level.clone())
-            .ok_or_else(|| ContractError::NftMarketplace(InvalidLevelUp {}))?;
-        if amount_received != next_perk.price_in_reward_tokens {
-            return Err(ContractError::NftMarketplace(InvalidAmountReceivedForLevelUp {}));
+            .ok_or(ContractError::NftMarketplaceError(InvalidLevelUp {}))?;
+        if amount_received != next_perk.level_up_price_in_reward_tokens {
+            return Err(ContractError::NftMarketplaceError(
+                InvalidAmountReceivedForLevelUp {},
+            ));
         }
         Ok(true)
     }
@@ -96,7 +128,6 @@ impl VipLevel {
             VipLevel::Level3 => VipLevel::Level3,
         }
     }
-
 }
 
 #[cw_serde]
@@ -107,5 +138,5 @@ pub struct VipPerk {
     pub profile_description: bool,
     pub profile_links: bool,
     pub marketplace_fees_discount: Decimal,
-    pub price_in_reward_tokens: Uint128
+    pub level_up_price_in_reward_tokens: Uint128,
 }

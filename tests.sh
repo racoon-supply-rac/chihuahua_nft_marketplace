@@ -1,1 +1,0 @@
-cargo test --package chihuahua-nft-marketplace --lib tests::tests::tests ; cargo test --package crypto-assets-price-oracle --lib tests::tests ; cargo test --package cw2981-multiroyalties --lib tests

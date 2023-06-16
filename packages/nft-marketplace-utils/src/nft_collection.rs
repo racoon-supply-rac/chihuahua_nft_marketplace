@@ -1,17 +1,66 @@
 use std::marker::PhantomData;
+
 use cosmwasm_schema::cw_serde;
-use cosmwasm_std::{Addr, Empty, QuerierWrapper, QueryRequest, to_binary, Uint128, WasmQuery};
+use cosmwasm_std::{to_binary, Addr, Empty, QuerierWrapper, QueryRequest, Uint128, WasmQuery};
 use cw721::{ContractInfoResponse, Cw721QueryMsg, NumTokensResponse};
 use cw721_base::helpers::Cw721Contract;
-use cw_storage_plus::{Index, IndexedMap, IndexList, MultiIndex};
+use cw_storage_plus::{Index, IndexList, IndexedMap, MultiIndex};
+
 use general_utils::denominations::Denomination;
 use general_utils::error::ContractError;
 use general_utils::error::NftCollectionError::NoNftsMintedForThisContract;
+
 use crate::nft_sale::NftSale;
 
 pub type NftCollectionAddress = String;
 pub type TokenId = String;
 pub type NftCollectionAddressTokenId = String;
+
+#[cw_serde]
+pub struct NftContractInfo {
+    pub code_id: u64,
+    pub nft_contract_type: NftContractType,
+}
+
+impl NftContractInfo {
+    pub fn equal(&self, other: &NftContractInfo) -> bool {
+        if self.code_id != other.code_id {
+            return false;
+        }
+        if self.nft_contract_type != other.nft_contract_type {
+            return false;
+        }
+        true
+    }
+}
+
+#[cw_serde]
+pub enum NftContractType {
+    Cw2981MultiRoyalties,
+    Cw721OnChainMetadata,
+    Cw2981MadHuahua,
+    MarketplaceInfo,
+}
+
+#[cw_serde]
+pub struct NftCollectionInfoAndUsdcVol {
+    pub nft_collection_address: NftCollectionAddress,
+    pub nft_contract_info: NftContractInfo,
+    pub usdc_volume: Uint128,
+}
+
+impl NftCollectionInfoAndUsdcVol {
+    pub fn new(
+        nft_collection_address: NftCollectionAddress,
+        nft_contract_info: NftContractInfo,
+    ) -> Self {
+        NftCollectionInfoAndUsdcVol {
+            nft_collection_address,
+            nft_contract_info,
+            usdc_volume: Uint128::zero(),
+        }
+    }
+}
 
 #[cw_serde]
 pub struct NftCollectionInfoByDenom {
@@ -21,7 +70,7 @@ pub struct NftCollectionInfoByDenom {
     pub nfts_for_sale: u64,
     pub realized_trades: u64,
     pub total_volume: Uint128,
-    pub current_floor: Uint128
+    pub current_floor: Uint128,
 }
 
 impl NftCollectionInfoByDenom {
@@ -33,20 +82,20 @@ impl NftCollectionInfoByDenom {
         // Fetch and validate NFT contract information
         // TODO: Potentially a better way of doing it
         let given_contract_info: ContractInfoResponse = Cw721Contract::<Empty, Empty>(
-            Addr::unchecked(nft_collection_address.clone().to_string()),
+            Addr::unchecked(nft_collection_address.to_string()),
             PhantomData,
-            PhantomData)
-            .contract_info(&deps_querier)?;
+            PhantomData,
+        )
+        .contract_info(&deps_querier)?;
 
         let number_of_tokens: NumTokensResponse =
-            deps_querier
-                .query::<NumTokensResponse>(&QueryRequest::Wasm(WasmQuery::Smart {
-                    contract_addr: nft_collection_address.clone().to_string(),
-                    msg: to_binary(&Cw721QueryMsg::NumTokens {})?,
-                }))?;
+            deps_querier.query::<NumTokensResponse>(&QueryRequest::Wasm(WasmQuery::Smart {
+                contract_addr: nft_collection_address.to_string(),
+                msg: to_binary(&Cw721QueryMsg::NumTokens {})?,
+            }))?;
 
         if number_of_tokens.count < 1 {
-            return Err(ContractError::NftCollection(NoNftsMintedForThisContract {}))
+            return Err(ContractError::NftCollectionError(NoNftsMintedForThisContract {}));
         }
 
         Ok(NftCollectionInfoByDenom {
@@ -62,9 +111,10 @@ impl NftCollectionInfoByDenom {
 
     pub fn register_sale(self, nft_for_sale_validated: NftSale) -> Self {
         let current_floor = if self.current_floor == Uint128::zero() {
-            nft_for_sale_validated.sale_price_value.clone()
+            nft_for_sale_validated.sale_price_value
         } else {
-            self.current_floor.min(nft_for_sale_validated.sale_price_value.clone())
+            self.current_floor
+                .min(nft_for_sale_validated.sale_price_value)
         };
         Self {
             nfts_for_sale: self.nfts_for_sale + 1,
@@ -88,6 +138,12 @@ impl NftCollectionInfoByDenom {
         self.current_floor = new_floor;
         self
     }
+
+    pub fn expired_sale(mut self, new_floor: Uint128) -> Self {
+        self.nfts_for_sale -= 1;
+        self.current_floor = new_floor;
+        self
+    }
 }
 
 pub fn define_unique_collection_by_denom_id(nft_collection_address: &str, denom: &str) -> String {
@@ -99,19 +155,22 @@ pub struct NftCollectionDenomIndexes<'a> {
 }
 
 impl IndexList<NftCollectionInfoByDenom> for NftCollectionDenomIndexes<'_> {
-    fn get_indexes(&'_ self) -> Box<dyn Iterator<Item = &'_ dyn Index<NftCollectionInfoByDenom>> + '_> {
+    fn get_indexes(
+        &'_ self,
+    ) -> Box<dyn Iterator<Item = &'_ dyn Index<NftCollectionInfoByDenom>> + '_> {
         let v: Vec<&dyn Index<NftCollectionInfoByDenom>> = vec![&self.collection_index];
         Box::new(v.into_iter())
     }
 }
 
-pub fn nft_collection_denoms<'a>() -> IndexedMap<'a, String, NftCollectionInfoByDenom, NftCollectionDenomIndexes<'a>> {
+pub fn nft_collection_denoms<'a>(
+) -> IndexedMap<'a, String, NftCollectionInfoByDenom, NftCollectionDenomIndexes<'a>> {
     let indexes = NftCollectionDenomIndexes {
         collection_index: MultiIndex::new(
             |_, collection_denom| Addr::unchecked(collection_denom.nft_collection_address.clone()),
             "denoms",
             "denoms__nft_collection",
-        )
+        ),
     };
     IndexedMap::new("denoms", indexes)
 }

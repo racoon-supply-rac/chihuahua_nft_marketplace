@@ -1,5 +1,5 @@
-use cosmwasm_std::{Response, Timestamp};
 use cosmwasm_schema::cw_serde;
+use cosmwasm_std::{Response, Timestamp};
 
 #[cw_serde]
 pub struct ResponseHandler {
@@ -9,13 +9,13 @@ pub struct ResponseHandler {
 impl ResponseHandler {
     pub fn init_response() -> Self {
         Self {
-            response: Response::new().add_attribute("action", "Instantiate: Price Oracle contract")
+            response: Response::new().add_attribute("action", "Instantiate: Price Oracle contract"),
         }
     }
 
     pub fn update_config() -> Self {
         Self {
-            response: Response::new().add_attribute("action", "Admin update: Update configs")
+            response: Response::new().add_attribute("action", "Admin update: Update configs"),
         }
     }
 
@@ -23,7 +23,7 @@ impl ResponseHandler {
         Self {
             response: Response::new()
                 .add_attribute("action", "Execute: Add new oracle prices")
-                .add_attribute("Prices at time", at_time.to_string())
+                .add_attribute("Prices at time", at_time.to_string()),
         }
     }
 }

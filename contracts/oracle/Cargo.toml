@@ -1,0 +1,26 @@
+[package]
+name          = "oracle"
+description   = "oracle"
+version       = { workspace = true }
+edition       = { workspace = true }
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[features]
+backtraces = ["cosmwasm-std/backtraces"]
+library = []
+
+[dependencies]
+schemars           = { workspace = true }
+cw-storage-plus    = { workspace = true }
+cosmwasm-schema    = { workspace = true }
+cosmwasm-std       = { workspace = true }
+cw2                = { workspace = true }
+serde              = { workspace = true }
+price-oracle-utils = { workspace = true }
+general-utils      = { workspace = true }
+
+[dev-dependencies]
+cw-multi-test                = { workspace = true }
+anyhow                       = { workspace = true }

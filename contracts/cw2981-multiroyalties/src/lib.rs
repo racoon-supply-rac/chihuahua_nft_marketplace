@@ -1,15 +1,16 @@
-pub mod msg;
-pub mod query;
-
-pub use query::{check_royalties, query_royalties_info};
-
+#![allow(clippy::all)]
+#![allow(warnings)]
 use cosmwasm_schema::cw_serde;
-use cosmwasm_std::{to_binary, Empty, Addr};
-use cw2::set_contract_version;
+use cosmwasm_std::{Addr, Empty};
 use cw721_base::Cw721Contract;
 pub use cw721_base::{ContractError, InstantiateMsg, MintMsg, MinterResponse};
 
+pub use query::{check_royalties, query_royalties_info};
+
 use crate::msg::Cw2981QueryMsg;
+
+pub mod msg;
+pub mod query;
 
 // Version info for migration
 const CONTRACT_NAME: &str = "crates.io:cw2981-multiroyalties";
@@ -25,7 +26,7 @@ pub struct Trait {
 #[cw_serde]
 pub struct Royalty {
     pub receiver: Addr,
-    pub royalty_permille_int: u64
+    pub royalty_permille_int: u64,
 }
 
 // see: https://docs.opensea.io/docs/metadata-standards
@@ -55,10 +56,10 @@ pub type QueryMsg = cw721_base::QueryMsg<Cw2981QueryMsg>;
 
 #[cfg(not(feature = "library"))]
 pub mod entry {
-    use super::*;
-
     use cosmwasm_std::{entry_point, StdError};
     use cosmwasm_std::{Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult};
+
+    use super::*;
 
     #[entry_point]
     pub fn instantiate(
@@ -69,7 +70,7 @@ pub mod entry {
     ) -> Result<Response, ContractError> {
         let res = Cw2981Contract::default().instantiate(deps.branch(), env, info, msg)?;
         // Explicitly set contract name and version, otherwise set to cw721-base info
-        set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)
+        cw2::set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)
             .map_err(ContractError::Std)?;
         Ok(res)
     }
@@ -85,15 +86,23 @@ pub mod entry {
             ExecuteMsg::Mint(msg) => {
                 if let Some(ext) = &msg.extension {
                     if let Some(royalties) = &ext.royalties {
-                        let total_royalties: u64 = royalties.iter().map(|r| r.royalty_permille_int).sum();
+                        let total_royalties: u64 =
+                            royalties.iter().map(|r| r.royalty_permille_int).sum();
                         if total_royalties >= 1000 || total_royalties == 0 {
-                            return Err(ContractError::Std(StdError::GenericErr { msg: "Invalid Royalties".to_string() }));
+                            return Err(ContractError::Std(StdError::GenericErr {
+                                msg: "Invalid Royalties".to_string(),
+                            }));
                         }
                     }
                 }
-                Cw2981Contract::default().execute(deps, env, info, cw721_base::ExecuteMsg::Mint(msg))
-            },
-            _ => Cw2981Contract::default().execute(deps, env, info, msg)
+                Cw2981Contract::default().execute(
+                    deps,
+                    env,
+                    info,
+                    cw721_base::ExecuteMsg::Mint(msg),
+                )
+            }
+            _ => Cw2981Contract::default().execute(deps, env, info, msg),
         }
     }
 
@@ -104,8 +113,10 @@ pub mod entry {
                 Cw2981QueryMsg::RoyaltyInfo {
                     token_id,
                     sale_price,
-                } => to_binary(&query_royalties_info(deps, token_id, sale_price)?),
-                Cw2981QueryMsg::CheckRoyalties {} => to_binary(&check_royalties(deps)?),
+                } => cosmwasm_std::to_binary(&query_royalties_info(deps, token_id, sale_price)?),
+                Cw2981QueryMsg::CheckRoyalties {} => {
+                    cosmwasm_std::to_binary(&check_royalties(deps)?)
+                }
             },
             _ => Cw2981Contract::default().query(deps, env, msg),
         }
@@ -114,13 +125,13 @@ pub mod entry {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use cosmwasm_std::testing::{mock_dependencies, mock_env, mock_info};
+    use cosmwasm_std::{from_binary, Uint128};
+    use cw721::Cw721Query;
+
     use crate::msg::{CheckRoyaltiesResponse, RoyaltiesInfoResponse};
 
-    use cosmwasm_std::{from_binary, Uint128};
-
-    use cosmwasm_std::testing::{mock_dependencies, mock_env, mock_info};
-    use cw721::Cw721Query;
+    use super::*;
 
     const CREATOR: &str = "creator";
 
@@ -221,11 +232,11 @@ mod tests {
                 royalties: Some(vec![
                     Royalty {
                         receiver: Addr::unchecked("jeanluc".to_string()),
-                        royalty_permille_int: 10
+                        royalty_permille_int: 10,
                     },
                     Royalty {
                         receiver: Addr::unchecked("steve".to_string()),
-                        royalty_permille_int: 20
+                        royalty_permille_int: 20,
                     },
                 ]),
                 ..Metadata::default()
@@ -237,11 +248,11 @@ mod tests {
         let expected = vec![
             RoyaltiesInfoResponse {
                 address: mint_msg.owner,
-                royalty_amount: Uint128::new(1)
+                royalty_amount: Uint128::new(1),
             },
             RoyaltiesInfoResponse {
                 address: "steve".to_string(),
-                royalty_amount: Uint128::new(2)
+                royalty_amount: Uint128::new(2),
             },
         ];
         let res =
@@ -272,11 +283,11 @@ mod tests {
                 royalties: Some(vec![
                     Royalty {
                         receiver: Addr::unchecked("janeway".to_string()),
-                        royalty_permille_int: 20
+                        royalty_permille_int: 20,
                     },
                     Royalty {
                         receiver: Addr::unchecked("mike".to_string()),
-                        royalty_permille_int: 20
+                        royalty_permille_int: 20,
                     },
                 ]),
                 ..Metadata::default()
@@ -290,12 +301,12 @@ mod tests {
         let voyager_expected = vec![
             RoyaltiesInfoResponse {
                 address: second_mint_msg.owner,
-                royalty_amount: Uint128::new(8)
+                royalty_amount: Uint128::new(8),
             },
             RoyaltiesInfoResponse {
                 address: "mike".to_string(),
-                royalty_amount: Uint128::new(8)
-            }
+                royalty_amount: Uint128::new(8),
+            },
         ];
 
         let res = query_royalties_info(

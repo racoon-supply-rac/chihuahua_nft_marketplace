@@ -1,7 +1,9 @@
 use std::str::FromStr;
+
+use cosmwasm_std::{Decimal, Deps, StdError, StdResult, Uint128};
+
 use crate::msg::{CheckRoyaltiesResponse, RoyaltiesInfoResponse};
 use crate::{Cw2981Contract, Royalty};
-use cosmwasm_std::{Decimal, Deps, StdError, StdResult, Uint128};
 
 /// NOTE: default behaviour here is to round down
 /// EIP2981 specifies that the rounding behaviour is at the discretion of the implementer
@@ -14,27 +16,34 @@ pub fn query_royalties_info(
     let token_info = contract.tokens.load(deps.storage, &token_id)?;
 
     let mut royalties: Vec<Royalty> = vec![];
-    match token_info.extension {
-        Some(ref ext) => {
-            royalties = ext.clone().royalties.unwrap_or(vec![]);
-        },
-        _ => {}
+    if let Some(ref ext) = token_info.extension {
+        royalties = ext.clone().royalties.unwrap_or_default();
     }
+
     // Make a vector of royalties
-    let mut royalties_response: Vec<RoyaltiesInfoResponse> = Vec::with_capacity( royalties.len() );
-    for royalty in royalties.into_iter() {
-        if  Decimal::permille(royalty.royalty_permille_int.clone()) > Decimal::from_str("1.0").unwrap() || Decimal::permille(royalty.royalty_permille_int.clone()) < Decimal::from_str("0.001").unwrap() {
-            return Err(StdError::GenericErr { msg: "InvalidRoyaltyValue".to_string() })
-        }
-        let royalty_amount: Uint128 = sale_price * Decimal::permille(royalty.royalty_permille_int.clone());
-        royalties_response.push(
-            RoyaltiesInfoResponse {
+    if !royalties.is_empty() {
+        let mut royalties_response: Vec<RoyaltiesInfoResponse> =
+            Vec::with_capacity(royalties.len());
+        for royalty in royalties.into_iter() {
+            if Decimal::permille(royalty.royalty_permille_int) > Decimal::from_str("1.0").unwrap()
+                || Decimal::permille(royalty.royalty_permille_int)
+                    < Decimal::from_str("0.001").unwrap()
+            {
+                return Err(StdError::GenericErr {
+                    msg: "InvalidRoyaltyValue".to_string(),
+                });
+            }
+            let royalty_amount: Uint128 =
+                sale_price * Decimal::permille(royalty.royalty_permille_int);
+            royalties_response.push(RoyaltiesInfoResponse {
                 address: royalty.receiver.to_string(),
                 royalty_amount,
-            }
-        )
+            })
+        }
+        Ok(royalties_response)
+    } else {
+        Ok(vec![])
     }
-    Ok(royalties_response)
 }
 
 /// As our default implementation here specifies royalties at token level

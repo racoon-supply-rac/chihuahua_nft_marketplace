@@ -15,6 +15,7 @@ backtraces = ["cosmwasm-std/backtraces"]
 library = []
 
 [dependencies]
+schemars        = { workspace = true }
 cosmwasm-schema = { workspace = true }
 cosmwasm-std    = { workspace = true }
 cw2             = { workspace = true }
@@ -23,5 +24,5 @@ cw721-base      = { workspace = true, features = ["library"] }
 serde           = { workspace = true }
 
 [dev-dependencies]
-cw-multi-test   = "0.13.0"
-anyhow = { version = "1.0.51"}
+cw-multi-test                = { workspace = true }
+anyhow                       = { workspace = true }

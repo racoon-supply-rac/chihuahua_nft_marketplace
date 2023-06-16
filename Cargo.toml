@@ -1,5 +1,5 @@
 [workspace]
-members = ["contracts/*", "packages/*"]
+members = ["contracts/*", "packages/*", "testing/"]
 
 [workspace.package]
 version       = "0.0.1"
@@ -10,23 +10,25 @@ rust-version  = "1.64.0"
 license       = "MIT"
 
 [workspace.dependencies]
+schemars                   = "0.8.11"
 cosmwasm-schema            = "1.2.1"
 cosmwasm-std               = "1.2.1"
 cw2                        = "0.16.0"
-cw20                       = "0.16.0"
-cw20-base                  = "0.16.0"
+cw20                       = "0.15.1"
+cw20-base                  = { version = "0.15.1", features = ["library"] }
+cw-storage-plus            = "0.16.0"
 cw721                      = "0.16.0"
 cw721-base                 = "0.16.0"
-cw-storage-plus            = "0.16.0"
+cw721-metadata-onchain     = "0.15.0"
 thiserror                  = "1.0.31"
 cw-utils                   = "0.16.0"
+cw-multi-test              = "0.16.2"
+anyhow                     = "1.0.51"
 serde                      = { version = "1.0.140", default-features = false, features = ["derive"] }
 chihuahua-nft-marketplace  = { version = "0.0.1", path = "./contracts/chihuahua-nft-marketplace" }
-crypto-assets-price-oracle = { version = "0.0.1", path = "./contracts/crypto-assets-price-oracle" }
+oracle                     = { version = "0.0.1", path = "./contracts/oracle" }
 nft-marketplace-utils      = { version = "0.0.1", path = "./packages/nft-marketplace-utils" }
 price-oracle-utils         = { version = "0.0.1", path = "./packages/price-oracle-utils" }
 general-utils              = { version = "0.0.1", path = "./packages/general-utils" }
+testing                    = { version = "0.0.1", path = "testing" }
 
-[workspace.dev-dependencies]
-cw-multi-test   = "0.16.2"
-anyhow = { version = "1.0.51"}

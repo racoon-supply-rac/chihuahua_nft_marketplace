@@ -8,6 +8,7 @@ homepage      = { workspace = true }
 rust-version  = { workspace = true }
 
 [dependencies]
+schemars         = { workspace = true }
 cosmwasm-schema  = { workspace = true }
 cosmwasm-std     = { workspace = true }
 cw2              = { workspace = true }
