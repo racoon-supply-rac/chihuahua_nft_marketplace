@@ -221,22 +221,19 @@ impl ResponseHandler {
         }
 
         // For each sale and buy -> send reward tokens
-        let mut vec_cw20_transfer: Vec<WasmMsg> = Vec::with_capacity(2_usize);
+        let mut reward_transfer_msgs: Vec<BankMsg> = Vec::with_capacity(2_usize);
         for addr in vec![buyer.sender.clone(), seller_profile.address].into_iter() {
             let reward_tokens_to_dist: Uint128 = realised_sale_value_usdc
                 .checked_div(Uint128::new(1_000_000u128))?
                 .checked_mul(reward_system.reward_token_per_1usdc_volume)?;
             if reward_tokens_to_dist >= Uint128::new(1u128) {
-                let cw20_transfer_msg = cw20::Cw20ExecuteMsg::Transfer {
-                    recipient: addr.clone().to_string(),
-                    amount: reward_tokens_to_dist,
-                };
-                let cw20_execute = WasmMsg::Execute {
-                    contract_addr: reward_system.reward_token_address.clone().to_string(),
-                    msg: to_binary(&cw20_transfer_msg)?,
-                    funds: vec![],
-                };
-                vec_cw20_transfer.push(cw20_execute);
+                reward_transfer_msgs.push(BankMsg::Send {
+                    to_address: addr.to_string(),
+                    amount: vec![coin(
+                        reward_tokens_to_dist.u128(),
+                        reward_system.reward_token_address.clone(),
+                    )],
+                });
             }
         }
 
@@ -310,7 +307,7 @@ impl ResponseHandler {
                 )],
             })
             .add_message(exec_cw721_transfer)
-            .add_messages(vec_cw20_transfer);
+            .add_messages(reward_transfer_msgs);
         if !messages_for_royalties.is_empty() {
             response = response.add_attributes(attributes_for_royalties);
             response = response.add_messages(messages_for_royalties);

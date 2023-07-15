@@ -1,6 +1,5 @@
 use cosmwasm_schema::{cw_serde, QueryResponses};
 use cosmwasm_std::{coins, to_binary, Uint128, WasmMsg};
-use cw20::Cw20ReceiveMsg;
 
 use general_utils::denominations::{AcceptedDenominations, Denomination};
 use general_utils::error::ContractError;
@@ -27,7 +26,7 @@ pub struct InstantiateMsg {
 #[cw_serde]
 #[allow(clippy::large_enum_variant)]
 pub enum ExecuteMsg {
-    RemoveExpiredSale {},
+    RemoveSomeExpiredSales {},
     UpdateConfig {
         list_of_updates: Vec<UpdateConfigEnum>,
     },
@@ -83,31 +82,7 @@ pub enum ExecuteMsg {
         to: String,
         message: String,
     },
-    Receive(Cw20ReceiveMsg),
-}
-
-#[cw_serde]
-pub struct LegacyImportMkpcStatsByDenom {
-    pub denom: String,
-    pub nfts_for_sale: u64,
-    pub realized_sales_counter: u64,
-    pub total_realized_sales_volume: Uint128,
-    pub total_marketplace_fees: Uint128,
-    pub marketplace_fees_to_claim: Uint128,
-}
-
-#[cw_serde]
-pub struct LegacyImportNftCollVolUsdc {
-    pub collection_address: String,
-    pub volume: Uint128,
-}
-
-#[cw_serde]
-pub struct LegacyImportProfiles {
-    pub address: String,
-    pub buy_info: Vec<TradeInfo>,
-    pub sell_info: Vec<TradeInfo>,
-    pub number_of_trades: u64,
+    LevelUpProfile {}
 }
 
 impl ExecuteMsg {
@@ -191,11 +166,6 @@ impl ExecuteMsg {
             funds: coins(offer_price_value.u128(), offer_price_denom),
         }))
     }
-}
-
-#[cw_serde]
-pub enum ReceiveMsg {
-    LevelUpProfile {},
 }
 
 #[cw_serde]

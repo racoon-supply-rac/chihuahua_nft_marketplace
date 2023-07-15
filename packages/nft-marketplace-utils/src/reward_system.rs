@@ -69,7 +69,6 @@ impl RewardSystem {
             ContractError::NftMarketplaceError(InvalidRewards {})
         );
 
-        let reward_token_address = api.addr_validate(&reward_token_address)?.to_string();
         Ok(RewardSystem {
             reward_token_address,
             reward_token_per_1usdc_volume,

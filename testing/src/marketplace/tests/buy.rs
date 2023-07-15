@@ -10,10 +10,9 @@ mod tests {
     use nft_marketplace_utils::nft_sale::NftSale;
     use nft_marketplace_utils::profile::TradeInfo;
 
-    use crate::common::utils::constants::{OWNER, ROYALTY_RECEIVER1, ROYALTY_RECEIVER2, WALLET2};
+    use crate::common::utils::constants::{OWNER, REWARD_TOKEN, ROYALTY_RECEIVER1, ROYALTY_RECEIVER2, WALLET2};
     use crate::common::utils::utils_common::tests::{
-        instantiate_necessary_for_tests, query_account_cw20_balance,
-        query_account_native_denom_balance,
+        instantiate_necessary_for_tests, query_account_native_denom_balance,
     };
     use crate::common::utils::utils_marketplace_contract_test::tests::{
         marketplace_test_exec_add_new_collection, marketplace_test_exec_add_nft_code_id,
@@ -42,8 +41,7 @@ mod tests {
         let cw721_base_smart_contract_addr1 = necessary.cw2981_nft_contract_addr1;
         let cw721_base_smart_contract_addr2 = necessary.cw2981_nft_contract_addr2;
         let _price_oracle_smart_contract_addr = necessary.price_oracle_contract_addr;
-        let reward_token = necessary.cw20_reward_token;
-        let _invalid_reward_token = necessary.cw20_invalid_reward_token;
+        let _invalid_reward_token = necessary.invalid_reward_token;
 
         // - Make sure the info about the purchase is valid -> check if the item is for sale
         // - additional info can only be used by the contract
@@ -60,7 +58,7 @@ mod tests {
             nft_marketplace_smart_contract_addr.to_string(),
             info,
         );
-        assert!(execute_output.is_ok(), "{}", false);
+        assert!(execute_output.is_ok());
 
         // Mint several NFTs
         let info = mock_info(OWNER, &[]);
@@ -86,7 +84,7 @@ mod tests {
                     },
                 ]),
             );
-            assert!(execute_output.is_ok(), "{}", false);
+            assert!(execute_output.is_ok());
             let execute_output = cw2981_multi_test_exec_mint(
                 &mut app,
                 &Addr::unchecked(cw721_base_smart_contract_addr1.clone()),
@@ -104,7 +102,7 @@ mod tests {
                     },
                 ]),
             );
-            assert!(execute_output.is_ok(), "{}", false);
+            assert!(execute_output.is_ok());
 
             let execute_output = cw2981_multi_test_exec_mint(
                 &mut app,
@@ -123,7 +121,7 @@ mod tests {
                     },
                 ]),
             );
-            assert!(execute_output.is_ok(), "{}", false);
+            assert!(execute_output.is_ok());
         }
 
         // Add accepted code id and stuff
@@ -150,7 +148,7 @@ mod tests {
                 nft_contract_type: NftContractType::Cw2981MultiRoyalties,
             },
         );
-        assert!(execute_output.is_ok(), "{}", false);
+        assert!(execute_output.is_ok());
         let execute_output = marketplace_test_exec_add_new_collection(
             &mut app,
             &Addr::unchecked(nft_marketplace_smart_contract_addr.clone()),
@@ -161,7 +159,7 @@ mod tests {
                 nft_contract_type: NftContractType::Cw2981MultiRoyalties,
             },
         );
-        assert!(execute_output.is_ok(), "{}", false);
+        assert!(execute_output.is_ok());
 
         // Create profiles
         let info = mock_info(OWNER, &[]);
@@ -171,7 +169,7 @@ mod tests {
             info,
             None,
         );
-        assert!(execute_output.is_ok(), "{}", false);
+        assert!(execute_output.is_ok());
         let info = mock_info(WALLET2, &[]);
         let execute_output = marketplace_test_exec_create_my_profile(
             &mut app,
@@ -179,7 +177,7 @@ mod tests {
             info,
             None,
         );
-        assert!(execute_output.is_ok(), "{}", false);
+        assert!(execute_output.is_ok());
 
         // Put NFTs for sale
         let info = mock_info(OWNER, &coins(6_900_000u128, "uhuahua".to_string()));
@@ -197,7 +195,7 @@ mod tests {
                 token_id_iter_str.to_string(),
                 1571797419u64 + 87000u64,
             );
-            assert!(execute_output.is_ok(), "{}", false);
+            assert!(execute_output.is_ok());
             let execute_output = marketplace_test_exec_sell_nft(
                 &mut app,
                 &Addr::unchecked(nft_marketplace_smart_contract_addr.clone()),
@@ -211,7 +209,7 @@ mod tests {
                     sale_expiration: Timestamp::from_seconds(1571797419u64 + 87000u64),
                 },
             );
-            assert!(execute_output.is_ok(), "{}", false);
+            assert!(execute_output.is_ok());
 
             // Wallet 2
             let execute_output = cw2981_multi_test_exec_approve(
@@ -222,7 +220,7 @@ mod tests {
                 token_id_iter_str2.to_string(),
                 1571797419u64 + 87000u64,
             );
-            assert!(execute_output.is_ok(), "{}", false);
+            assert!(execute_output.is_ok());
 
             let execute_output = marketplace_test_exec_sell_nft(
                 &mut app,
@@ -237,7 +235,7 @@ mod tests {
                     sale_expiration: Timestamp::from_seconds(1571797419u64 + 87000u64),
                 },
             );
-            assert!(execute_output.is_ok(), "{}", false);
+            assert!(execute_output.is_ok());
 
             // Now we list for the 2nd contract
             let execute_output = cw2981_multi_test_exec_approve(
@@ -248,7 +246,7 @@ mod tests {
                 token_id_iter_str2.to_string(),
                 1571797419u64 + 87000u64,
             );
-            assert!(execute_output.is_ok(), "{}", false);
+            assert!(execute_output.is_ok());
 
             let execute_output = marketplace_test_exec_sell_nft(
                 &mut app,
@@ -263,7 +261,7 @@ mod tests {
                     sale_expiration: Timestamp::from_seconds(1571797419u64 + 87000u64),
                 },
             );
-            assert!(execute_output.is_ok(), "{}", false);
+            assert!(execute_output.is_ok());
         }
 
         // Check for sale -> only up to token 19 should be for sale
@@ -580,7 +578,7 @@ mod tests {
             "Token17".to_string(),
             None,
         );
-        assert!(execute_output.is_ok(), "{}", false);
+        assert!(execute_output.is_ok());
         app.set_block(previous_block_info);
         // Balances should be the same
         let query_output = query_account_native_denom_balance(&app, OWNER, native_huahua.clone());
@@ -605,7 +603,7 @@ mod tests {
             "Token18".to_string(),
             None,
         );
-        assert!(execute_output.is_ok(), "{}", false);
+        assert!(execute_output.is_ok());
 
         // Validate NFTs for sale for the collection
         let query_output = marketplace_test_query_get_coll_all_nfts_for_sale(
@@ -717,7 +715,7 @@ mod tests {
             "Token0".to_string(),
             None,
         );
-        assert!(execute_output.is_ok(), "{}", false);
+        assert!(execute_output.is_ok());
 
         // Buy NFT
         let info = mock_info(OWNER, &coins(100_000_000u128, native_huahua.clone()));
@@ -729,7 +727,7 @@ mod tests {
             "Tokenx1".to_string(),
             None,
         );
-        assert!(execute_output.is_ok(), "{}", false);
+        assert!(execute_output.is_ok());
 
         // Check floor
         let query_output = marketplace_test_query_get_nft_coll_info(
@@ -754,7 +752,7 @@ mod tests {
             nft_marketplace_smart_contract_addr.to_string(),
             info,
         );
-        assert!(execute_output.is_ok(), "{}", false);
+        assert!(execute_output.is_ok());
 
         // Check that the fees are resetted
         let query_output =
@@ -774,7 +772,7 @@ mod tests {
             "Token20".to_string(),
             1571797419u64 + 87000u64,
         );
-        assert!(execute_output.is_ok(), "{}", false);
+        assert!(execute_output.is_ok());
         let info = mock_info(OWNER, &coins(6_900_000u128, native_huahua.clone()));
         let execute_output = marketplace_test_exec_sell_nft(
             &mut app,
@@ -789,17 +787,17 @@ mod tests {
                 sale_expiration: Timestamp::from_seconds(1571797419u64 + 87000u64),
             },
         );
-        assert!(execute_output.is_ok(), "{}", false);
+        assert!(execute_output.is_ok());
 
         // Check if the received rewards are accurate as per the sale
         let output_query =
-            query_account_cw20_balance(&app, reward_token.clone(), Addr::unchecked(OWNER));
+            query_account_native_denom_balance(&app, OWNER, REWARD_TOKEN.to_string());
         // initial value
-        assert_eq!(output_query.unwrap().balance, Uint128::new(999500000000000));
+        assert_eq!(output_query.amount, Uint128::new(100000000000000000000));
         let output_query =
-            query_account_cw20_balance(&app, reward_token.clone(), Addr::unchecked(WALLET2));
+            query_account_native_denom_balance(&app, WALLET2, REWARD_TOKEN.to_string());
         // initial value
-        assert_eq!(output_query.unwrap().balance, Uint128::new(100000000000));
+        assert_eq!(output_query.amount, Uint128::new(100000000000000000000));
 
         let info = mock_info(WALLET2, &coins(100_000_000_000_000u128, native_huahua));
         let execute_output = marketplace_test_exec_buy_nft(
@@ -810,20 +808,20 @@ mod tests {
             "Token20".to_string(),
             None,
         );
-        assert!(execute_output.is_ok(), "{}", false);
+        assert!(execute_output.is_ok());
 
         // Check if the received rewards are accurate as per the sale
         let output_query =
-            query_account_cw20_balance(&app, reward_token.clone(), Addr::unchecked(WALLET2));
+            query_account_native_denom_balance(&app, WALLET2, REWARD_TOKEN.to_string());
         // 100_000_000_000_000u128 * 120u128 / 1_000_000u128 = 12000$USDC
         assert_eq!(
-            output_query.unwrap().balance,
-            Uint128::new(12_000_000_000u128 + 100000000000u128)
+            output_query.amount,
+            Uint128::new(12_000_000_000u128 + 100000000000000000000u128)
         );
-        let output_query = query_account_cw20_balance(&app, reward_token, Addr::unchecked(OWNER));
+        let output_query = query_account_native_denom_balance(&app, OWNER, REWARD_TOKEN.to_string());
         assert_eq!(
-            output_query.unwrap().balance,
-            Uint128::new(999500000000000 + 12_000_000_000u128)
+            output_query.amount,
+            Uint128::new(100000000000000000000u128 + 12_000_000_000u128)
         );
     }
 }

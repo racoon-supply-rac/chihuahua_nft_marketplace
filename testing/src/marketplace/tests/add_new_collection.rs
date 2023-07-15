@@ -41,8 +41,8 @@ mod tests {
         let cw2981_base_smart_contract_addr1 = necessary.cw2981_nft_contract_addr1;
         let _cw2981_base_smart_contract_addr2 = necessary.cw2981_nft_contract_addr2;
         let _price_oracle_smart_contract_addr = necessary.price_oracle_contract_addr;
-        let _reward_token = necessary.cw20_reward_token;
-        let _invalid_reward_token = necessary.cw20_invalid_reward_token;
+        let _reward_token = necessary.reward_token;
+        let _invalid_reward_token = necessary.invalid_reward_token;
 
         let info = mock_info(OWNER, &[]);
         let execute_output = marketplace_test_exec_enable_disable(
@@ -140,7 +140,7 @@ mod tests {
             OWNER.to_string(),
             None,
         );
-        assert!(execute_output.is_ok(), "{}", false);
+        assert!(execute_output.is_ok());
 
         // ----->>> It is only possible to add the Cw2981MultiRoyalties & Cw721OnChainMetadata (no royalties) type except for the two legacy collections [ok]
         let info = mock_info(OWNER, &[]);
@@ -173,7 +173,7 @@ mod tests {
             OWNER.to_string(),
             None,
         );
-        assert!(execute_output.is_ok(), "{}", false);
+        assert!(execute_output.is_ok());
 
         // ----->>> It is only possible to add the Cw2981MultiRoyalties & Cw721OnChainMetadata (no royalties) type except for the two legacy collections [ok]
         let info = mock_info(OWNER, &[]);

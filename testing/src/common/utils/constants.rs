@@ -12,3 +12,5 @@ pub const ROYALTY_RECEIVER2: &str = "chihuahua1gm6afmyfhldd2eentuskw3h0rq296nlt9
 
 pub const UHUAHUA: &str = "uhuahua";
 pub const IBC_ATOM: &str = "ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2";
+pub const REWARD_TOKEN: &str = "ureward";
+pub const INVALID_REWARD_TOKEN: &str = "uinvalid";

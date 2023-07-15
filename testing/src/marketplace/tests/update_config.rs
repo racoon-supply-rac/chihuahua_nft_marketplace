@@ -27,8 +27,8 @@ mod tests {
         let _cw2981_base_smart_contract_addr1 = necessary.cw2981_nft_contract_addr1;
         let _cw2981_base_smart_contract_addr2 = necessary.cw2981_nft_contract_addr2;
         let _price_oracle_smart_contract_addr = necessary.price_oracle_contract_addr;
-        let _reward_token = necessary.cw20_reward_token;
-        let _invalid_reward_token = necessary.cw20_invalid_reward_token;
+        let _reward_token = necessary.reward_token;
+        let _invalid_reward_token = necessary.invalid_reward_token;
 
         // Validation:
         // - Contract should be disabled after instantiation [ok]
@@ -55,7 +55,7 @@ mod tests {
             nft_marketplace_smart_contract_addr.to_string(),
             info,
         );
-        assert!(execute_output.is_ok(), "{}", false);
+        assert!(execute_output.is_ok());
         let query_output =
             marketplace_test_query_get_config(&app, nft_marketplace_smart_contract_addr.clone());
         assert!(query_output.contract_enabled);
@@ -68,7 +68,7 @@ mod tests {
             info,
             None,
         );
-        assert!(execute_output.is_ok(), "{}", false);
+        assert!(execute_output.is_ok());
 
         // Only the Admin can use this execute function
         let info = mock_info(WALLET3, &[]);
@@ -94,8 +94,8 @@ mod tests {
         let _cw2981_base_smart_contract_addr1 = necessary.cw2981_nft_contract_addr1;
         let _cw2981_base_smart_contract_addr2 = necessary.cw2981_nft_contract_addr2;
         let _price_oracle_smart_contract_addr = necessary.price_oracle_contract_addr;
-        let _reward_token = necessary.cw20_reward_token;
-        let _invalid_reward_token = necessary.cw20_invalid_reward_token;
+        let _reward_token = necessary.reward_token;
+        let _invalid_reward_token = necessary.invalid_reward_token;
 
         // Validation:
         // - EnableDisable is tested in the previous test [ok]
@@ -113,7 +113,7 @@ mod tests {
                 denoms: vec!["utoken".to_string(), "utoken2".to_string()],
             }],
         );
-        assert!(execute_output.is_ok(), "{}", false);
+        assert!(execute_output.is_ok());
 
         // Check if the change is reflected
         let query_output =
@@ -155,7 +155,7 @@ mod tests {
                 address: WALLET2.to_string(),
             }],
         );
-        assert!(execute_output.is_ok(), "{}", false);
+        assert!(execute_output.is_ok());
         let query_output =
             marketplace_test_query_get_config(&app, nft_marketplace_smart_contract_addr.clone());
         assert_eq!(query_output.contract_owner, WALLET2.to_string());
@@ -187,7 +187,7 @@ mod tests {
                 },
             ],
         );
-        assert!(execute_output.is_ok(), "{}", false);
+        assert!(execute_output.is_ok());
         let query_output =
             marketplace_test_query_get_config(&app, nft_marketplace_smart_contract_addr.clone());
         assert_eq!(
@@ -241,7 +241,7 @@ mod tests {
                 },
             }],
         );
-        assert!(execute_output.is_ok(), "{}", false);
+        assert!(execute_output.is_ok());
         let query_output =
             marketplace_test_query_get_config(&app, nft_marketplace_smart_contract_addr);
         assert_eq!(

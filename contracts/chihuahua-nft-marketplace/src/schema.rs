@@ -26,7 +26,7 @@ pub mod contract {
     use general_utils::validations::{if_admin, if_enabled};
     use crate::execute_functions::{
         add_new_nft_collection, answer_offer, buy_nft, cancel_nft_sale, cancel_offer,
-        claim_marketplace_fees, create_profile, instantiate, offer, receive_cw20,
+        claim_marketplace_fees, create_profile, instantiate, offer,
         sell_nft, send_message, transfer_my_nft, update_config, update_nft_sale,
         update_profile,
     };

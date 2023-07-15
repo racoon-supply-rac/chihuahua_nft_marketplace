@@ -8,7 +8,6 @@ pub mod create_profile;
 pub mod instantiate;
 pub mod level_up_profile;
 pub mod offer;
-pub mod receive_cw20;
 pub mod remove_expired_sales;
 pub mod sell_nft;
 pub mod send_message;

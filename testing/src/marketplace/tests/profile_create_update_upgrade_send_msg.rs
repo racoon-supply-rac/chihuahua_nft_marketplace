@@ -1,14 +1,14 @@
 #[cfg(test)]
 mod tests {
     use cosmwasm_std::testing::{mock_dependencies, mock_info};
-    use cosmwasm_std::{Addr, Uint128};
+    use cosmwasm_std::{Addr, Coin, Uint128};
 
     use nft_marketplace_utils::profile::{
         NftShowcase, Profile, ProfileMessage, ProfileMessages, ProfileUpdateAction, Socials,
     };
     use nft_marketplace_utils::reward_system::VipLevel;
 
-    use crate::common::utils::constants::{OWNER, WALLET2, WALLET3};
+    use crate::common::utils::constants::{INVALID_REWARD_TOKEN, OWNER, REWARD_TOKEN, WALLET2, WALLET3};
     use crate::common::utils::utils_common::tests::instantiate_necessary_for_tests;
     use crate::common::utils::utils_marketplace_contract_test::tests::{
         marketplace_test_exec_create_my_profile, marketplace_test_exec_enable_disable,
@@ -16,7 +16,6 @@ mod tests {
         marketplace_test_exec_update_my_profile, marketplace_test_query_get_profile_info,
     };
     use crate::common::utils::utils_nft_contract_test::tests::cw2981_multi_test_exec_mint;
-    use chihuahua_nft_marketplace::msg::ReceiveMsg;
 
     #[test]
     fn unit_test_execute_function_create_update_upgrade_send_msg_profile_test() {
@@ -29,8 +28,7 @@ mod tests {
         let _cw721_base_smart_contract_addr1 = necessary.cw2981_nft_contract_addr1;
         let _cw721_base_smart_contract_addr2 = necessary.cw2981_nft_contract_addr2;
         let _price_oracle_smart_contract_addr = necessary.price_oracle_contract_addr;
-        let reward_token = necessary.cw20_reward_token;
-        let _invalid_reward_token = necessary.cw20_invalid_reward_token;
+        let _invalid_reward_token = necessary.invalid_reward_token;
 
         // Enable contract
         let info = mock_info(OWNER, &[]);
@@ -64,7 +62,7 @@ mod tests {
             WALLET3.to_string(),
             None,
         );
-        assert!(execute_output.is_ok(), "{}", false);
+        assert!(execute_output.is_ok());
         let info = mock_info(OWNER, &[]);
         let execute_output = cw2981_multi_test_exec_mint(
             &mut app,
@@ -74,7 +72,7 @@ mod tests {
             WALLET3.to_string(),
             None,
         );
-        assert!(execute_output.is_ok(), "{}", false);
+        assert!(execute_output.is_ok());
 
         // Create profile -> can only error if sends additional_info
         let info = mock_info(WALLET3, &[]);
@@ -94,7 +92,7 @@ mod tests {
             info,
             None,
         );
-        assert!(execute_output.is_ok(), "{}", false);
+        assert!(execute_output.is_ok());
 
         // Validate the profile's info
         let execute_output = marketplace_test_query_get_profile_info(
@@ -176,7 +174,7 @@ mod tests {
             wallet3_profile.clone(),
             ProfileUpdateAction::Add,
         );
-        assert!(execute_output.is_ok(), "{}", false);
+        assert!(execute_output.is_ok());
 
         // Validate the updated value
         let profile_info_output = marketplace_test_query_get_profile_info(
@@ -221,7 +219,7 @@ mod tests {
             wallet3_profile.clone(),
             ProfileUpdateAction::Add,
         );
-        assert!(execute_output.is_ok(), "{}", false);
+        assert!(execute_output.is_ok());
 
         // Validate the updated value
         let profile_info_output = marketplace_test_query_get_profile_info(
@@ -249,7 +247,7 @@ mod tests {
             wallet3_profile.clone(),
             ProfileUpdateAction::Remove,
         );
-        assert!(execute_output.is_ok(), "{}", false);
+        assert!(execute_output.is_ok());
         // Validate the updated value
         let profile_info_output = marketplace_test_query_get_profile_info(
             &app,
@@ -262,58 +260,52 @@ mod tests {
         assert_eq!(profile_info_output.profile_nft_token_id, None);
 
         //Now upgrading the profile -> Invalid amount sent for level up
-        let info = mock_info(WALLET3, &[]);
+        let info = mock_info(WALLET3, &[
+            Coin {
+                denom: REWARD_TOKEN.to_string(),
+                amount: Uint128::new(1u128)
+            }]
+        );
         let execute_output = marketplace_test_exec_lvl_up_profile(
             &mut app,
             info,
             &Addr::unchecked(nft_marketplace_smart_contract_addr.clone()),
-            reward_token.clone(),
-            Uint128::new(1u128),
-            ReceiveMsg::LevelUpProfile {},
         );
         assert_eq!(
-            execute_output
-                .unwrap_err()
-                .source()
-                .unwrap()
-                .source()
-                .expect("_")
-                .to_string(),
+            execute_output.unwrap_err().source().unwrap().to_string(),
             "InvalidAmountReceivedForLevelUp".to_string()
         );
 
         //Now upgrading the profile -> Invalid denom sent for level up
-        let info = mock_info(WALLET3, &[]);
+        let info = mock_info(WALLET3, &[
+            Coin {
+                denom: INVALID_REWARD_TOKEN.to_string(),
+                amount: Uint128::new(1_000u128)
+            }
+        ]);
         let execute_output = marketplace_test_exec_lvl_up_profile(
             &mut app,
             info,
             &Addr::unchecked(nft_marketplace_smart_contract_addr.clone()),
-            _invalid_reward_token,
-            Uint128::new(1_000u128),
-            ReceiveMsg::LevelUpProfile {},
         );
         assert_eq!(
-            execute_output
-                .unwrap_err()
-                .source()
-                .unwrap()
-                .source()
-                .expect("_")
-                .to_string(),
+            execute_output.unwrap_err().source().unwrap().to_string(),
             "InvalidDenominationReceived".to_string()
         );
 
         // Valid upgrade
-        let info = mock_info(WALLET3, &[]);
+        let info = mock_info(WALLET3, &[
+            Coin {
+                denom: REWARD_TOKEN.to_string(),
+                amount: Uint128::new(1_000u128)
+            }
+        ]);
         let execute_output = marketplace_test_exec_lvl_up_profile(
             &mut app,
             info,
             &Addr::unchecked(nft_marketplace_smart_contract_addr.clone()),
-            reward_token.clone(),
-            Uint128::new(1_000u128),
-            ReceiveMsg::LevelUpProfile {},
         );
-        assert!(execute_output.is_ok(), "{}", false);
+        assert!(execute_output.is_ok());
 
         // Update the profile with description -> should be valid
         let info = mock_info(WALLET3, &[]);
@@ -328,7 +320,7 @@ mod tests {
             wallet3_profile.clone(),
             ProfileUpdateAction::Add,
         );
-        assert!(execute_output.is_ok(), "{}", false);
+        assert!(execute_output.is_ok());
 
         // Validate the updated value
         let profile_info_output = marketplace_test_query_get_profile_info(
@@ -349,35 +341,41 @@ mod tests {
         assert_eq!(profile_info_output.description, None);
 
         // Make the next 2 level up
-        let info = mock_info(WALLET3, &[]);
+        let info = mock_info(WALLET3, &[
+            Coin {
+                denom: REWARD_TOKEN.to_string(),
+                amount: Uint128::new(10_000u128)
+            }
+        ]);
         let execute_output = marketplace_test_exec_lvl_up_profile(
             &mut app,
             info,
             &Addr::unchecked(nft_marketplace_smart_contract_addr.clone()),
-            reward_token.clone(),
-            Uint128::new(10_000u128),
-            ReceiveMsg::LevelUpProfile {},
         );
-        assert!(execute_output.is_ok(), "{}", false);
-        let info = mock_info(WALLET3, &[]);
+        assert!(execute_output.is_ok());
+        let info = mock_info(WALLET3, &[
+            Coin {
+                denom: REWARD_TOKEN.to_string(),
+                amount: Uint128::new(50_000u128)
+            }
+        ]);
         let execute_output = marketplace_test_exec_lvl_up_profile(
             &mut app,
             info,
             &Addr::unchecked(nft_marketplace_smart_contract_addr.clone()),
-            reward_token.clone(),
-            Uint128::new(50_000u128),
-            ReceiveMsg::LevelUpProfile {},
         );
-        assert!(execute_output.is_ok(), "{}", false);
+        assert!(execute_output.is_ok());
         // Try another level up -> should error
-        let info = mock_info(WALLET3, &[]);
+        let info = mock_info(WALLET3, &[
+            Coin {
+                denom: REWARD_TOKEN.to_string(),
+                amount: Uint128::new(50_000u128)
+            }
+        ]);
         let execute_output = marketplace_test_exec_lvl_up_profile(
             &mut app,
             info,
             &Addr::unchecked(nft_marketplace_smart_contract_addr.clone()),
-            reward_token,
-            Uint128::new(50_000u128),
-            ReceiveMsg::LevelUpProfile {},
         );
         assert!(execute_output.is_err());
 
@@ -392,7 +390,7 @@ mod tests {
             wallet3_profile.clone(),
             ProfileUpdateAction::Add,
         );
-        assert!(execute_output.is_ok(), "{}", false);
+        assert!(execute_output.is_ok());
 
         // Validate the updated value
         let profile_info_output = marketplace_test_query_get_profile_info(
@@ -418,7 +416,7 @@ mod tests {
             wallet3_profile.clone(),
             ProfileUpdateAction::Remove,
         );
-        assert!(execute_output.is_ok(), "{}", false);
+        assert!(execute_output.is_ok());
 
         // Validate the updated value
         let profile_info_output = marketplace_test_query_get_profile_info(
@@ -490,7 +488,7 @@ mod tests {
             wallet3_profile.clone(),
             ProfileUpdateAction::Add,
         );
-        assert!(execute_output.is_ok(), "{}", false);
+        assert!(execute_output.is_ok());
         // Validate the updated value
         let profile_info_output = marketplace_test_query_get_profile_info(
             &app,
@@ -534,7 +532,7 @@ mod tests {
             wallet3_profile,
             ProfileUpdateAction::Add,
         );
-        assert!(execute_output.is_ok(), "{}", false);
+        assert!(execute_output.is_ok());
         // Validate the updated value
         let profile_info_output = marketplace_test_query_get_profile_info(
             &app,
@@ -574,7 +572,7 @@ mod tests {
             WALLET3.to_string(),
             "Hello mom!".to_string(),
         );
-        assert!(execute_output.is_ok(), "{}", false);
+        assert!(execute_output.is_ok());
 
         let info = mock_info(OWNER, &[]);
         let execute_output = marketplace_test_exec_send_message(
@@ -584,7 +582,7 @@ mod tests {
             "BITCOIN".to_string(),
             "Hello dad!".to_string(),
         );
-        assert!(execute_output.is_ok(), "{}", false);
+        assert!(execute_output.is_ok());
 
         // Validate the updated value
         let profile_info_output = marketplace_test_query_get_profile_info(
@@ -623,7 +621,7 @@ mod tests {
             OWNER.to_string(),
             "Hey son!".to_string(),
         );
-        assert!(execute_output.is_ok(), "{}", false);
+        assert!(execute_output.is_ok());
 
         // Validate the updated value
         let profile_info_output = marketplace_test_query_get_profile_info(
@@ -658,7 +656,7 @@ mod tests {
                 OWNER.to_string(),
                 msg_to_send,
             );
-            assert!(execute_output.is_ok(), "{}", false);
+            assert!(execute_output.is_ok());
         }
 
         // Validate the updated value
@@ -717,7 +715,7 @@ mod tests {
             new_profile,
             ProfileUpdateAction::Add,
         );
-        assert!(execute_output.is_ok(), "{}", false);
+        assert!(execute_output.is_ok());
         // Validate the updated value
         let profile_info_output = marketplace_test_query_get_profile_info(
             &app,
@@ -770,7 +768,7 @@ mod tests {
             new_profile,
             ProfileUpdateAction::Remove,
         );
-        assert!(execute_output.is_ok(), "{}", false);
+        assert!(execute_output.is_ok());
         // Validate the updated value
         let profile_info_output = marketplace_test_query_get_profile_info(
             &app,
@@ -800,7 +798,7 @@ mod tests {
             info,
             None,
         );
-        assert!(execute_output.is_ok(), "{}", false);
+        assert!(execute_output.is_ok());
         let profile_info_output = marketplace_test_query_get_profile_info(
             &app,
             nft_marketplace_smart_contract_addr.to_string(),

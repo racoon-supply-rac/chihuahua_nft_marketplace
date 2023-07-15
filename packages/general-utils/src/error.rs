@@ -21,8 +21,6 @@ pub enum GenericError {
     ContractDisabled {},
     #[error("InvalidDenominationReceived")]
     InvalidDenominationReceived {},
-    #[error("InvalidCw20MessageReceived")]
-    InvalidCw20MessageReceived {},
     #[error("InvalidFundsReceived")]
     InvalidFundsReceived {},
     #[error("Addr ({address}) and block ({block})")]

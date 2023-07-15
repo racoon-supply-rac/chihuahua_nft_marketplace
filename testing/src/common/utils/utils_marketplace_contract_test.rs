@@ -3,7 +3,7 @@ pub mod tests {
     use std::str::FromStr;
 
     use anyhow::Result as AnyResult;
-    use cosmwasm_std::{to_binary, Addr, Decimal, Empty, MessageInfo, StdResult, Uint128};
+    use cosmwasm_std::{Addr, Decimal, Empty, MessageInfo, StdResult, Uint128};
     use cw_multi_test::{App, AppResponse, Contract, ContractWrapper, Executor};
 
     use general_utils::denominations::AcceptedDenominations;
@@ -19,7 +19,8 @@ pub mod tests {
     use nft_marketplace_utils::reward_system::{RewardSystem, VipLevel, VipPerk};
 
     use crate::common::utils::constants::OWNER;
-    use chihuahua_nft_marketplace::msg::{ReceiveMsg, UpdateConfigEnum};
+    use chihuahua_nft_marketplace::msg::{UpdateConfigEnum};
+    use chihuahua_nft_marketplace::msg::ExecuteMsg::LevelUpProfile;
 
     pub fn smart_contract_def_test_nft_marketplace() -> Box<dyn Contract<Empty>> {
         let smart_contract = ContractWrapper::new(
@@ -402,7 +403,7 @@ pub mod tests {
         contract_addr: String,
         info: MessageInfo,
     ) -> AnyResult<AppResponse> {
-        let msg = chihuahua_nft_marketplace::msg::ExecuteMsg::RemoveExpiredSale {};
+        let msg = chihuahua_nft_marketplace::msg::ExecuteMsg::RemoveSomeExpiredSales {};
         app.execute_contract(info.sender, Addr::unchecked(contract_addr), &msg, &[])
     }
 
@@ -424,16 +425,9 @@ pub mod tests {
         app: &mut App,
         info: MessageInfo,
         contract_addr: &Addr,
-        cw20_denom: String,
-        amount_of_tokens: Uint128,
-        cw20_msg: ReceiveMsg,
     ) -> AnyResult<AppResponse> {
-        let msg = cw20::Cw20ExecuteMsg::Send {
-            contract: contract_addr.to_string(),
-            amount: amount_of_tokens,
-            msg: to_binary(&cw20_msg).unwrap(),
-        };
-        app.execute_contract(info.sender, Addr::unchecked(cw20_denom), &msg, &info.funds)
+        let msg = LevelUpProfile {};
+        app.execute_contract(info.sender, contract_addr.clone(), &msg, &info.funds)
     }
 
     // Query Functions: NFT Marketplace

@@ -1,18 +1,17 @@
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
-use cosmwasm_std::{to_binary, Binary, StdResult};
+use cosmwasm_std::{to_binary, Binary, StdResult, Uint128, BankMsg, Coin};
 use cosmwasm_std::{Deps, DepsMut, Env, MessageInfo, Response};
 use cw2;
 use general_utils::error::ContractError;
 use general_utils::validations::{if_admin, if_enabled, validate_address};
+use nft_marketplace_utils::marketplace_statistics::{CollectionVolume, GeneralStats, MarketplaceStatsByDenom};
+use nft_marketplace_utils::nft_collection::{NftCollectionInfoAndUsdcVol, NftContractInfo, NftContractType};
+use crate::constants::MARKETPLACE_USDC_INDICATOR;
 
-use crate::execute_functions::{
-    add_new_nft_collection, answer_offer, buy_nft, cancel_nft_sale, cancel_offer,
-    claim_marketplace_fees, create_profile, instantiate, offer, receive_cw20, remove_expired_sales,
-    sell_nft, send_message, transfer_my_nft, update_config, update_nft_sale, update_profile,
-};
+use crate::execute_functions::{add_new_nft_collection, answer_offer, buy_nft, cancel_nft_sale, cancel_offer, claim_marketplace_fees, create_profile, instantiate, level_up_profile, offer, remove_expired_sales, sell_nft, send_message, transfer_my_nft, update_config, update_nft_sale, update_profile};
 use crate::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
-use crate::state::{CONFIG};
+use crate::state::{CONFIG, GENERAL_STATS, LISTED_NFT_COLLECTIONS_INFO_AND_USDC_VOL, MARKETPLACE_STATS_BY_DENOM};
 
 // Name & Version
 const CONTRACT_NAME: &str = concat!("crates.io:", env!("CARGO_CRATE_NAME"));
@@ -39,10 +38,6 @@ pub fn execute(
     let config = CONFIG.load(deps.storage)?;
     match msg {
         // Admin entry points
-        ExecuteMsg::RemoveExpiredSale {} => {
-            if_admin(&config.contract_owner, info.sender.as_ref())?;
-            remove_expired_sales::remove_expired_sales_function(deps, env, info)
-        }
         ExecuteMsg::UpdateConfig { list_of_updates } => {
             if_admin(&config.contract_owner, info.sender.as_ref())?;
             update_config::execute_update_config(deps, env, info, list_of_updates)
@@ -67,6 +62,9 @@ pub fn execute(
             )
         }
         // Any users entry points
+        ExecuteMsg::RemoveSomeExpiredSales {} => {
+            remove_expired_sales::remove_expired_sales_function(deps, env, info)
+        }
         ExecuteMsg::TransferMyNft {
             nft_collection_address,
             token_id,
@@ -228,15 +226,15 @@ pub fn execute(
             if_enabled(config.contract_enabled)?;
             update_profile::execute_update_profile(deps, env, info, profile, profile_update_action)
         }
-        ExecuteMsg::Receive(msg) => {
+        ExecuteMsg::LevelUpProfile {} => {
             if_enabled(config.contract_enabled)?;
-            receive_cw20::execute_receive_cw20(deps, info, msg, env)
+            level_up_profile::execute_level_up_profile(deps, env, info)
         }
     }
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]
-pub fn migrate(_deps: DepsMut, _env: Env, _msg: MigrateMsg) -> Result<Response, ContractError> {
+pub fn migrate(deps: DepsMut, _env: Env, _msg: MigrateMsg) -> Result<Response, ContractError> {
     Ok(Response::default())
 }
 

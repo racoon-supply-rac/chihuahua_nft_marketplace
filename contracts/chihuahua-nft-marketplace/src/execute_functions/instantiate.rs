@@ -35,10 +35,6 @@ pub fn instantiate_contract(
             })?,
         }))?;
 
-    // Check if the given reward address is a contract
-    deps.querier
-        .query_wasm_contract_info(init_msg.reward_system.reward_token_address.clone())?;
-
     CONFIG.save(
         deps.storage,
         &Config::new_checked(

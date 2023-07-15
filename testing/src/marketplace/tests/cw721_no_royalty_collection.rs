@@ -35,8 +35,8 @@ mod tests {
         let _cw2981_base_smart_contract_addr1 = necessary.cw2981_nft_contract_addr1;
         let _cw2981_base_smart_contract_addr2 = necessary.cw2981_nft_contract_addr2;
         let _price_oracle_smart_contract_addr = necessary.price_oracle_contract_addr;
-        let _reward_token = necessary.cw20_reward_token;
-        let _invalid_reward_token = necessary.cw20_invalid_reward_token;
+        let _reward_token = necessary.reward_token;
+        let _invalid_reward_token = necessary.invalid_reward_token;
 
         let (no_royalty_nft_collection, code_id_nft) =
             instantiate_smart_contract_test_cw721_metadata_onchain(&mut app);
@@ -51,7 +51,7 @@ mod tests {
             OWNER.to_string(),
             None,
         );
-        assert!(execute_output.is_ok(), "{}", false);
+        assert!(execute_output.is_ok());
 
         // Add accepted code id and stuff
         let info = mock_info(OWNER, &[]);
@@ -78,7 +78,7 @@ mod tests {
                 nft_contract_type: NftContractType::Cw721OnChainMetadata,
             },
         );
-        assert!(execute_output.is_ok(), "{}", false);
+        assert!(execute_output.is_ok());
 
         // Enable the contract
         let info = mock_info(OWNER, &[]);
@@ -87,7 +87,7 @@ mod tests {
             nft_marketplace_smart_contract_addr.to_string(),
             info,
         );
-        assert!(execute_output.is_ok(), "{}", false);
+        assert!(execute_output.is_ok());
 
         // Add the sale
         let info = mock_info(OWNER, &[]);
@@ -99,7 +99,7 @@ mod tests {
             "Token1".to_string(),
             1571797419u64 + 600u64,
         );
-        assert!(execute_output.is_ok(), "{}", false);
+        assert!(execute_output.is_ok());
         let info = mock_info(OWNER, &coins(6_900_000u128, "uhuahua".to_string()));
         let execute_output = marketplace_test_exec_sell_nft(
             &mut app,
@@ -114,7 +114,7 @@ mod tests {
                 sale_expiration: Timestamp::from_seconds(1571797419u64 + 87000u64),
             },
         );
-        assert!(execute_output.is_ok(), "{}", false);
+        assert!(execute_output.is_ok());
 
         // Prior to sale values -> 6900000 for listing
         let query_output = query_account_native_denom_balance(
@@ -134,7 +134,7 @@ mod tests {
             "Token1".to_string(),
             None,
         );
-        assert!(execute_output.is_ok(), "{}", false);
+        assert!(execute_output.is_ok());
 
         // After the sale -> 6900000 + 0.042 * 100_000 for listing (and the seller should receive the rest because no royalties)
         let query_output = query_account_native_denom_balance(

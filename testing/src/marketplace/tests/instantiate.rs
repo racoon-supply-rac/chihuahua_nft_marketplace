@@ -10,9 +10,9 @@ mod tests {
     use nft_marketplace_utils::reward_system::{VipLevel, VipPerk};
     use price_oracle_utils::oracle::{OraclePrice, OraclePrices};
 
-    use crate::common::utils::constants::{FEEDER, OWNER};
+    use crate::common::utils::constants::{FEEDER, INVALID_REWARD_TOKEN, OWNER, REWARD_TOKEN};
     use crate::common::utils::utils_common::tests::{
-        instantiate_cw20, instantiate_necessary_for_tests, mock_app,
+        instantiate_necessary_for_tests, mock_app,
     };
     use crate::common::utils::utils_marketplace_contract_test::tests::{
         default_init_msg_mkpc, instantiate_custom_smart_contract_test_nft_marketplace,
@@ -37,8 +37,8 @@ mod tests {
         let _cw2981_base_smart_contract_addr1 = necessary.cw2981_nft_contract_addr1;
         let _cw2981_base_smart_contract_addr2 = necessary.cw2981_nft_contract_addr2;
         let price_oracle_smart_contract_addr = necessary.price_oracle_contract_addr;
-        let reward_token = necessary.cw20_reward_token;
-        let _invalid_reward_token = necessary.cw20_invalid_reward_token;
+        let reward_token = necessary.reward_token;
+        let _invalid_reward_token = necessary.invalid_reward_token;
 
         // Validation: Stats to init are ok and logic works as expected:
         // - Every element in the instantiate message [excluding reward system] is validated [ok]
@@ -136,9 +136,6 @@ mod tests {
         let price_oracle_smart_contract_address: Addr =
             instantiate_smart_contract_test_price_oracle(&mut app, accepted_denoms.clone());
 
-        let reward_token = instantiate_cw20(&mut app);
-        let invalid_reward_token = instantiate_cw20(&mut app);
-
         let contract_code_id = app.store_code(smart_contract_def_test_cw2981_multi());
         let (cw2981_base_smart_contract_address1, _code_id_nft) =
             instantiate_smart_contract_test_cw2981_multi(&mut app, contract_code_id);
@@ -172,7 +169,7 @@ mod tests {
         let mkpc_addr = instantiate_custom_smart_contract_test_nft_marketplace(
             &mut app,
             Some(accepted_denoms.clone()),
-            Some(reward_token.to_string()),
+            Some(REWARD_TOKEN.to_string()),
             None,
             None,
             None,
@@ -186,7 +183,7 @@ mod tests {
         let mkpc_addr = instantiate_custom_smart_contract_test_nft_marketplace(
             &mut app,
             Some(accepted_denoms.clone()),
-            Some(reward_token.to_string()),
+            Some(REWARD_TOKEN.to_string()),
             None,
             None,
             None,
@@ -200,7 +197,7 @@ mod tests {
         let mkpc_addr = instantiate_custom_smart_contract_test_nft_marketplace(
             &mut app,
             Some(accepted_denoms.clone()),
-            Some(reward_token.to_string()),
+            Some(REWARD_TOKEN.to_string()),
             None,
             None,
             None,
@@ -210,39 +207,11 @@ mod tests {
         );
         assert!(mkpc_addr.is_err());
 
-        // Invalid Reward Address
-        let mkpc_addr = instantiate_custom_smart_contract_test_nft_marketplace(
-            &mut app,
-            Some(accepted_denoms.clone()),
-            Some(OWNER.to_string()),
-            None,
-            None,
-            None,
-            Some(price_oracle_smart_contract_address.to_string()),
-            None,
-            None,
-        );
-        assert!(mkpc_addr.is_err());
-
-        // Invalid Reward Address
-        let mkpc_addr = instantiate_custom_smart_contract_test_nft_marketplace(
-            &mut app,
-            Some(accepted_denoms.clone()),
-            Some(OWNER.to_string()),
-            None,
-            None,
-            None,
-            Some(price_oracle_smart_contract_address.to_string()),
-            None,
-            None,
-        );
-        assert!(mkpc_addr.is_err());
-
         // Invalid listing fee
         let mkpc_addr = instantiate_custom_smart_contract_test_nft_marketplace(
             &mut app,
             Some(accepted_denoms.clone()),
-            Some(reward_token.to_string()),
+            Some(REWARD_TOKEN.to_string()),
             None,
             Some(Uint128::zero()),
             None,
@@ -256,10 +225,10 @@ mod tests {
         let mkpc_addr = instantiate_custom_smart_contract_test_nft_marketplace(
             &mut app,
             Some(accepted_denoms.clone()),
-            Some(reward_token.to_string()),
+            Some(REWARD_TOKEN.to_string()),
             None,
             None,
-            Some(invalid_reward_token.to_string()),
+            Some(INVALID_REWARD_TOKEN.to_string()),
             Some(price_oracle_smart_contract_address.to_string()),
             None,
             None,
@@ -270,10 +239,10 @@ mod tests {
         let mkpc_addr = instantiate_custom_smart_contract_test_nft_marketplace(
             &mut app,
             Some(accepted_denoms.clone()),
-            Some(reward_token.to_string()),
+            Some(REWARD_TOKEN.to_string()),
             None,
             None,
-            Some(reward_token.to_string()),
+            Some(REWARD_TOKEN.to_string()),
             Some(price_oracle_smart_contract_address.to_string()),
             None,
             None,
@@ -284,7 +253,7 @@ mod tests {
         let mkpc_addr = instantiate_custom_smart_contract_test_nft_marketplace(
             &mut app,
             Some(accepted_denoms.clone()),
-            Some(reward_token.to_string()),
+            Some(REWARD_TOKEN.to_string()),
             None,
             None,
             None,
@@ -298,7 +267,7 @@ mod tests {
         let mkpc_addr = instantiate_custom_smart_contract_test_nft_marketplace(
             &mut app,
             Some(accepted_denoms.clone()),
-            Some(reward_token.to_string()),
+            Some(REWARD_TOKEN.to_string()),
             None,
             None,
             None,
@@ -310,12 +279,12 @@ mod tests {
 
         // Invalid reward system
         let mut init_msg = default_init_msg_mkpc();
-        init_msg.reward_system.reward_token_address = reward_token.to_string();
+        init_msg.reward_system.reward_token_address = REWARD_TOKEN.to_string();
         init_msg.reward_system.vip_perks = vec![];
         let mkpc_addr = instantiate_custom_smart_contract_test_nft_marketplace(
             &mut app,
             Some(accepted_denoms.clone()),
-            Some(reward_token.to_string()),
+            Some(REWARD_TOKEN.to_string()),
             None,
             None,
             None,
@@ -327,7 +296,7 @@ mod tests {
 
         // Invalid reward system
         let mut init_msg = default_init_msg_mkpc();
-        init_msg.reward_system.reward_token_address = reward_token.to_string();
+        init_msg.reward_system.reward_token_address = REWARD_TOKEN.to_string();
         init_msg.reward_system.vip_perks[0] = VipPerk {
             vip_level: VipLevel::Level2,
             profile_background: false,
@@ -340,7 +309,7 @@ mod tests {
         let mkpc_addr = instantiate_custom_smart_contract_test_nft_marketplace(
             &mut app,
             Some(accepted_denoms),
-            Some(reward_token.to_string()),
+            Some(REWARD_TOKEN.to_string()),
             None,
             None,
             None,

@@ -14,8 +14,6 @@ schemars                   = "0.8.11"
 cosmwasm-schema            = "1.2.1"
 cosmwasm-std               = "1.2.1"
 cw2                        = "0.16.0"
-cw20                       = "0.15.1"
-cw20-base                  = { version = "0.15.1", features = ["library"] }
 cw-storage-plus            = "0.16.0"
 cw721                      = "0.16.0"
 cw721-base                 = "0.16.0"

@@ -17,6 +17,7 @@ pub fn remove_expired_sales_function(
             .denom_index
             .prefix(denom.to_string())
             .range(deps.storage, None, None, Order::Ascending)
+            .take(25)
             .collect::<StdResult<Vec<_>>>()?;
         for (unique_id, nft_sale) in all_nfts_for_sale.iter() {
             if nft_sale.sale_expiration < env.block.time {

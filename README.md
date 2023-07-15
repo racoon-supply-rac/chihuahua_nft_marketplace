@@ -1,10 +1,8 @@
-# Chihuahua NFT Marketplace contract - Beta Version
+# Chihuahua NFT Marketplace contract
 This repo contains all the necessary to deploy the Chihuahua NFT Marketplace Beta Version on a CosmWasm enabled blockchain.
-The code has not been audited and currently contains 98% of the codebase (but not entirely optimized).
+The code has not been audited.
 
-The final version of the code will be published at the end of the project.
-
-If you want to launch your NFTs, please make sure to use the [cw2981-multiroyalties](contracts/cw2981-multiroyalties) contracts as it is the only one compatible with the marketplace for now.
+If you want to launch your NFTs, please make sure to use the following NFT standard [cw2981-multiroyalties](contracts/cw2981-multiroyalties) as it is the only one compatible with the marketplace for now.
 
 ## Structure
 The **packages** contain most of the structs and helpers needed by the contracts and the **contracts** works together
